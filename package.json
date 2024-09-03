@@ -1,0 +1,24 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "aws-sdk": "^2.1687.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.0.2",
+    "mysql": "^2.18.1",
+    "nodemailer": "^6.9.14",
+    "razorpay": "^2.9.4",
+    "serverless-plugin-split-stacks": "^1.13.0"
+  },
+  "devDependencies": {
+    "serverless-offline": "^13.8.0"
+  }
+}
