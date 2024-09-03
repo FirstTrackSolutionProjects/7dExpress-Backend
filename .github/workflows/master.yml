@@ -26,6 +26,8 @@ jobs:
         args: deploy
       env:
         SERVERLESS_ACCESS_KEY: AKrl2WbhhuV6p1XKh89HLMaQA53LeoUKGDDhlPvYfXIFj
-        # or if using AWS credentials directly
+        # or if using AWS credentials directly 
         AWS_ACCESS_KEY_ID: AKIAZQ3DSWGIX6R5MR77
         AWS_SECRET_ACCESS_KEY: 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
+
+        #
