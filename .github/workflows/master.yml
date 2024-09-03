@@ -29,5 +29,3 @@ jobs:
         # or if using AWS credentials directly 
         AWS_ACCESS_KEY_ID: AKIAZQ3DSWGIX6R5MR77
         AWS_SECRET_ACCESS_KEY: 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
-
-        #
