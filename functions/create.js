@@ -417,7 +417,7 @@ exports.handler = async (event) => {
     return {
       status: 504, response : error, success : false
     };
-  }  
+  }
   finally {
     connection.end()
   }
