@@ -8,26 +8,26 @@ provider:
   region: ap-south-1
   stage: api
   environment:
-    ACCESS_TOKEN_SECRET : e4f19ef7-d720-4e33-912d-04b0abbf9ac3
-    DB_HOST : ftst-sql.c1s88m8y0hjs.ap-south-1.rds.amazonaws.com
-    DB_NAME : 7dExpress
-    DB_PASSWORD : 1e672741-8c79-43b3-9b1c-dafcdc5a184d
-    DB_USER : admin
-    CONTACT_EMAIL : info@7dexpress.com
-    CONTACT_SERVICE_EMAIL : info@7dexpress.com
-    VERIFY_EMAIL : info@7dexpress.com
-    EMAIL_HOST : smtp.zoho.in
-    EMAIL_PASS : 7dexpress@2024
-    EMAIL_PORT : 465
-    EMAIL_SECURE : true
-    EMAIL_USER : info@7dexpress.com
-    REFRESH_TOKEN_SECRET : 65f3b97e-3edc-45d6-976e-8e1a37111264
-    RAZORPAY_KEY_SECRET  :  c1J9KtPvnQnhLcuuRC6FVoE5
-    AWS_ACCESS_KEY_ID_ : AKIAZQ3DSWGI5UP7GXZQ
-    AWS_SECRET_ACCESS_KEY_ : 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
-    AWS_REGION_ : ap-south-1
-    S3_BUCKET_NAME_ : 7dexpress-docs
-    SHIPROCKET_REFRESH_TOKEN  :  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1NjEwNjUxNiwiaWF0IjoxNzI0NTcwNTE2LCJqdGkiOiJkMmE2NjM0ODNiMWM0ZWY2OWJiMGQ5NjQwMzExZTllYiIsInVzZXJfaWQiOjE4MjczfQ.kHXgxVfEkiwq38qaGYP62UUfQXQ9xxCEnqArMKDN5z4
+    ACCESS_TOKEN_SECRET : ${env:ACCESS_TOKEN_SECRET}
+    DB_HOST : ${env:DB_HOST}
+    DB_NAME : ${env:DB_NAME}
+    DB_PASSWORD : ${env:DB_PASSWORD}
+    DB_USER : ${env:DB_USER}
+    CONTACT_EMAIL : ${env:CONTACT_EMAIL}
+    CONTACT_SERVICE_EMAIL : ${env:CONTACT_SERVICE_EMAIL}
+    VERIFY_EMAIL : ${env:VERIFY_EMAIL}
+    EMAIL_HOST : ${env:EMAIL_HOST}
+    EMAIL_PASS : ${env:EMAIL_PASS}
+    EMAIL_PORT : ${env:EMAIL_PORT}
+    EMAIL_SECURE : ${env:EMAIL_SECURE}
+    EMAIL_USER : ${env:EMAIL_USER}
+    REFRESH_TOKEN_SECRET : ${env:REFRESH_TOKEN_SECRET}
+    RAZORPAY_KEY_SECRET  :  ${env:RAZORPAY_KEY_SECRET}
+    AWS_ACCESS_KEY_ID_ : ${env:AWS_ACCESS_KEY_ID_}
+    AWS_SECRET_ACCESS_KEY_ : ${env:AWS_SECRET_ACCESS_KEY_}
+    AWS_REGION_ : ${env:AWS_REGION_}
+    S3_BUCKET_NAME_ : ${env:S3_BUCKET_NAME_}
+    SHIPROCKET_REFRESH_TOKEN  :  ${env:SHIPROCKET_REFRESH_TOKEN}
 
 functions:
   activateUser:
@@ -933,9 +933,5 @@ functions:
           integration: lambda
 plugins:
   - serverless-plugin-split-stacks
-  # - serverless-plugin-include-dependencies
+  - serverless-dotenv-plugin
   - serverless-offline
-
-# package:
-#   exclude:
-#     - node_modules/**
