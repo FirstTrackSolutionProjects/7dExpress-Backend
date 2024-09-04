@@ -304,7 +304,50 @@ exports.handler = async (event) => {
       })
       const shiprocketLoginData = await shipRocketLogin.json()
       const shiprocketAccess = shiprocketLoginData.access
-      
+      const shiprocketCreateOrderPayload = {
+        "no_of_packages": boxes.length,
+        "approx_weight": total_weight,
+        "is_insured": false ,
+        "is_to_pay": false,
+        "to_pay_amount": null,
+        "source_warehouse_name": warehouse.warehouseName,
+        "source_address_line1": warehouse.address,
+        "source_address_line2": warehouse.address,
+        "source_pincode": warehouse.pin,
+        "source_city": warehouse.city,
+        "source_state": warehouse.state,
+        "sender_contact_person_name": verified.name,
+        "sender_contact_person_email": verified.email,
+        "sender_contact_person_contact_no": "1234567890",
+        "destination_warehouse_name": shipment.shipping_city,
+        "destination_address_line1": shipment.shipping_address,
+        "destination_address_line2": shipment.shipping_address_2,
+        "destination_pincode": shipment.shipping_postcode,
+        "destination_city": shipment.shipping_city,
+        "destination_state": shipment.shipping_state,
+        "recipient_contact_person_name": shipment.customer_name,
+        "recipient_contact_person_email": shipment.customer_email,
+        "recipient_contact_person_contact_no": shipment.customer_mobile,
+        "client_id": "6488",
+        "packaging_unit_details": [],
+        "recipient_GST": null,
+        "supporting_docs": [],
+        "is_cod": shipment.pay_method=="Pre-paid"?false:true,
+        "cod_amount": shipment.cod_amount,
+        "mode_name": shipment.shipping_mode=="Surface"?"surface":"air"
+    }
+
+    boxes.map((box,index)=>{
+      shiprocketCreateOrderPayload.packaging_unit_details.push({
+        "units": 1,
+        "weight": parseInt(box.weight)/1000,
+        "length": box.length,
+        "height": box.height,
+        "width": box.breadth,
+        "unit": "cm"
+    },)
+    })
+
       const shipRocketCreateOrder = await fetch(`https://api-cargo.shiprocket.in/api/external/order_creation/`, {
         method: 'POST',
         headers: {
@@ -312,41 +355,10 @@ exports.handler = async (event) => {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
         },
-        body: JSON.stringify({
-          "no_of_packages": boxes.length,
-          "approx_weight": total_weight,
-          "is_insured": false ,
-          "is_to_pay": false,
-          "to_pay_amount": null,
-          "source_warehouse_name": warehouse.warehouseName,
-          "source_address_line1": warehouse.address,
-          "source_address_line2": warehouse.address,
-          "source_pincode": warehouse.pin,
-          "source_city": warehouse.city,
-          "source_state": warehouse.state,
-          "sender_contact_person_name": verified.name,
-          "sender_contact_person_email": verified.email,
-          "sender_contact_person_contact_no": "1234567890",
-          "destination_warehouse_name": shipment.shipping_city,
-          "destination_address_line1": shipment.shipping_address,
-          "destination_address_line2": shipment.shipping_address_2,
-          "destination_pincode": shipment.shipping_postcode,
-          "destination_city": shipment.shipping_city,
-          "destination_state": shipment.shipping_state,
-          "recipient_contact_person_name": shipment.customer_name,
-          "recipient_contact_person_email": shipment.customer_email,
-          "recipient_contact_person_contact_no": shipment.customer_mobile,
-          "client_id": "6488",
-          "packaging_unit_details": [],
-          "recipient_GST": null,
-          "supporting_docs": [],
-          "is_cod": shipment.pay_method=="Pre-paid"?false:true,
-          "cod_amount": shipment.cod_amount,
-          "mode_name": shipment.shipping_mode=="Surface"?"surface":"air"
-      })
+        body: JSON.stringify(shiprocketCreateOrderPayload)
     });
-    const data3 = await shipRocketCreateOrder.json();
-    if (data3.success){
+    const shipRocketCreateOrderData = await shipRocketCreateOrder.json();
+    if (shipRocketCreateOrderData.success){
       const shipRocketShipmentCreate = await fetch('https://api-cargo.shiprocket.in/api/order_shipment_association/',{
         method: 'POST',
         headers: {
@@ -356,12 +368,12 @@ exports.handler = async (event) => {
         },
         body: JSON.stringify({
           "client_id": "6488",
-          "order_id": data3.order_id,
+          "order_id": shipRocketCreateOrderData.order_id,
           "remarks": "Shipment",
           "recipient_GST": null,
           "to_pay_amount": "0",
-          "mode_id": data3.mode_id,
-          "delivery_partner_id": data3.delivery_partner_id,
+          "mode_id": shipRocketCreateOrderData.mode_id,
+          "delivery_partner_id": shipRocketCreateOrderData.delivery_partner_id,
           "pickup_date_time": `${shipment.pickup_date} ${shipment.pickup_time}`,
           "eway_bill_no": shipment.ewaybill,
           "invoice_value": total_amount,
@@ -381,15 +393,15 @@ exports.handler = async (event) => {
       }
       await connection.commit();
       return {
-        status:200, response : shipRocketShipmentCreateData, res2 : data3,success : true
+        status:200, response : shipRocketShipmentCreateData, res2 : shipRocketCreateOrderData,success : true
       }
     }
     return {
-      status:400, success : false, response : shipRocketShipmentCreateData,res2 : data3,message : "Error in creating shipment at Shiprocket"
+      status:400, success : false, response : shipRocketShipmentCreateData,res2 : shipRocketCreateOrderData,message : "Error in creating shipment at Shiprocket"
     }
     }
     return {
-      status:400, success : false, data3 ,message : "Error in creating order at Shiprocket"
+      status:400, success : false, shipRocketCreateOrderData ,message : "Error in creating order at Shiprocket"
     }
     }
     else {
