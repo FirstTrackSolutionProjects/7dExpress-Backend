@@ -7,13 +7,13 @@ const s3 = new AWS.S3({
 });
 
 exports.handler = async (event, context) => {
-  const { filename, filetype } = event.body;
+  const { filename, filetype, isPublic } = event.body;
   const params = {
     Bucket: process.env.S3_BUCKET_NAME_,
     Key: filename,
     Expires: 60, 
     ContentType: filetype,
-    ACL: 'private', 
+    ACL: isPublic?'public-read':'private'
   };
 
   try {

@@ -357,6 +357,7 @@ exports.handler = async (event) => {
         },
         body: JSON.stringify(shiprocketCreateOrderPayload)
     });
+    
     const shipRocketCreateOrderData = await shipRocketCreateOrder.json();
     if (shipRocketCreateOrderData.success){
       const shipRocketShipmentCreate = await fetch('https://api-cargo.shiprocket.in/api/order_shipment_association/',{
