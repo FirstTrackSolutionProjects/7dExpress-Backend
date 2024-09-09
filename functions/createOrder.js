@@ -56,7 +56,11 @@ exports.handler = async (event) => {
         shippingType,
         ewaybill,
         pickupDate,
-        pickupTime
+        pickupTime,
+        invoiceNumber,
+        invoiceDate,
+        invoiceAmount,
+        invoiceUrl
       } = event.body;
 
       if (same) {
@@ -110,8 +114,12 @@ exports.handler = async (event) => {
   shipping_mode,
   ewaybill,
   pickup_date,
-  pickup_time
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?, ?, ?, ?,?, ?,?,?,?)`,
+  pickup_time,
+  invoice_number,
+  invoice_date,
+  invoice_amount,
+  invoice_url
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?, ?, ?, ?,?, ?,?,?,?,?,?,?,?)`,
           [
             id,
             order,
@@ -144,7 +152,11 @@ exports.handler = async (event) => {
             shippingType,
             ewaybill,
             pickupDate,
-            pickupTime
+            pickupTime,
+            invoiceNumber,
+            invoiceDate,
+            invoiceAmount,
+            invoiceUrl
           ]
         );
         for (let i = 0; i < boxes.length; i++) {

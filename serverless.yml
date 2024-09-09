@@ -28,6 +28,7 @@ provider:
     AWS_REGION_ : ${env:AWS_REGION_}
     S3_BUCKET_NAME_ : ${env:S3_BUCKET_NAME_}
     SHIPROCKET_REFRESH_TOKEN  :  ${env:SHIPROCKET_REFRESH_TOKEN}
+    BUCKET_URL : ${env:BUCKET_URL}
 
 functions:
   activateUser:

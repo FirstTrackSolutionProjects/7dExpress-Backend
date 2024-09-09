@@ -96,6 +96,13 @@ return {
   status: 200,
   label : label.response, success : true,
 };
+} else if (serviceId == 3){
+  const [labels] = await connection.execute("SELECT * FROM SHIPMENT_LABELS WHERE ord_id = ?",[order])
+  const label = labels[0];
+  return {
+    status: 200,
+    label : label, success : true
+  };
 }
     
   }  finally {

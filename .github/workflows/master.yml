@@ -46,6 +46,7 @@ jobs:
         AWS_REGION_ : ${{ secrets.AWS_REGION_ }}
         S3_BUCKET_NAME_ : ${{ secrets.S3_BUCKET_NAME_ }}
         SHIPROCKET_REFRESH_TOKEN  :  ${{ secrets.SHIPROCKET_REFRESH_TOKEN }}
+        BUCKET_URL : ${{ vars.BUCKET_URL }}
         # or if using AWS credentials directly
         # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

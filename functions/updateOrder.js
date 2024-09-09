@@ -60,7 +60,11 @@ exports.handler = async (event) => {
             shippingType,
             ewaybill,
             pickupDate,
-            pickupTime
+            pickupTime,
+            invoiceNumber,
+            invoiceDate,
+            invoiceAmount,
+            invoiceUrl
           } = event.body
           const connection = await mysql.createConnection(dbConfig);
           if (admin){
@@ -113,9 +117,13 @@ exports.handler = async (event) => {
               shipping_mode =?,
               ewaybill =?,
               pickup_date =?,
-              pickup_time =?
+              pickup_time =?,
+              invoice_number =?,
+              invoice_date =?,
+              invoice_amount =?,
+              invoice_url =?
               WHERE ord_id = ? AND uid = ?`, 
-              [ payMode, name, email, phone, address, addressType, address2, addressType2, country, state, city, postcode, Baddress, BaddressType, Baddress2, BaddressType2, Bcountry, Bstate, Bcity, Bpostcode, same ,cod, discount,  gst, Cgst,  wid , shippingType,ewaybill,pickupDate,pickupTime,order, id]
+              [ payMode, name, email, phone, address, addressType, address2, addressType2, country, state, city, postcode, Baddress, BaddressType, Baddress2, BaddressType2, Bcountry, Bstate, Bcity, Bpostcode, same ,cod, discount,  gst, Cgst,  wid , shippingType,ewaybill,pickupDate,pickupTime,invoiceNumber,invoiceDate,invoiceAmount,invoiceUrl,order, id]
             );
             
             await connection.execute("DELETE FROM ORDERS WHERE ord_id = ?",[order]);

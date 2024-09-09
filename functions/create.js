@@ -359,6 +359,7 @@ exports.handler = async (event) => {
     });
     
     const shipRocketCreateOrderData = await shipRocketCreateOrder.json();
+    const invoiceUrl = process.env.BUCKET_URL+shipment.invoice_url
     if (shipRocketCreateOrderData.success){
       const shipRocketShipmentCreate = await fetch('https://api-cargo.shiprocket.in/api/order_shipment_association/',{
         method: 'POST',
@@ -377,16 +378,17 @@ exports.handler = async (event) => {
           "delivery_partner_id": shipRocketCreateOrderData.delivery_partner_id,
           "pickup_date_time": `${shipment.pickup_date} ${shipment.pickup_time}`,
           "eway_bill_no": shipment.ewaybill,
-          "invoice_value": total_amount,
-          "invoice_number": "A121",
-          "invoice_date": "2023-01-25",
-          "supporting_docs":["https://cdn.gscmaven.com/clientdata/610/2751/INV_20_04_2023_08_37_28.pdf"]
+          "invoice_value": shipment.invoice_amount,
+          "invoice_number": shipment.invoice_number,
+          "invoice_date": shipment.invoice_date,
+          "supporting_docs":[invoiceUrl]
       })
       })
       const shipRocketShipmentCreateData = await shipRocketShipmentCreate.json();
       if (shipRocketShipmentCreateData.id){
       await connection.beginTransaction();
-      await connection.execute('UPDATE SHIPMENTS set serviceId = ?, categoryId = ?, awb = ? WHERE ord_id = ?', [serviceId, categoryId,  ,order])
+      await connection.execute('UPDATE SHIPMENTS set serviceId = ?, categoryId = ?, awb = ? WHERE ord_id = ?', [serviceId, categoryId, shipRocketShipmentCreateData.waybill_no ,order])
+      await connection.execute('INSERT INTO SHIPMENT_LABELS VALUES (?,?)',[order,shipRocketShipmentCreateData.label_url])
       await connection.execute('INSERT INTO SHIPMENT_REPORTS VALUES (?,?,?)',[refId,order,"SHIPPED"])
       if (shipment.pay_method != "topay"){
         await connection.execute('UPDATE WALLET SET balance = balance - ? WHERE uid = ?', [price, id]);
