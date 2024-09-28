@@ -31,16 +31,16 @@ provider:
     BUCKET_URL : ${env:BUCKET_URL}
 
 functions:
-  activateUser:
-    handler: functions/activateUser.handler
-    memorySize: 512
-    timeout: 30
-    events:
-      - http:
-          path: activateUser
-          method: post
-          cors: true
-          integration: lambda
+  # activateUser:
+  #   handler: functions/activateUser.handler
+  #   memorySize: 512
+  #   timeout: 30
+  #   events:
+  #     - http:
+  #         path: activateUser
+  #         method: post
+  #         cors: true
+  #         integration: lambda
 
   # cancelShipment:
   #   handler: functions/cancelShipment.handler
