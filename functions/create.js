@@ -28,7 +28,7 @@ exports.handler = async (event) => {
     const verified = jwt.verify(token, SECRET_KEY);
     const id = verified.id;
     const [users] = await connection.execute('SELECT * FROM USERS WHERE uid =?', [id]);
-    const email = users[0].email;
+    const {email, phone} = users[0].email;
     const {order,  price,serviceId , categoryId} = event.body;
     const [shipments] = await connection.execute('SELECT * FROM SHIPMENTS WHERE ord_id = ? ', [order]);
     const shipment = shipments[0];
@@ -386,17 +386,28 @@ exports.handler = async (event) => {
       })
       const shipRocketShipmentCreateData = await shipRocketShipmentCreate.json();
       if (shipRocketShipmentCreateData.id){
-      await connection.beginTransaction();
-      await connection.execute('UPDATE SHIPMENTS set serviceId = ?, categoryId = ?, awb = ? WHERE ord_id = ?', [serviceId, categoryId, shipRocketShipmentCreateData.waybill_no ,order])
-      await connection.execute('INSERT INTO SHIPMENT_LABELS VALUES (?,?)',[order,shipRocketShipmentCreateData.label_url])
-      await connection.execute('INSERT INTO SHIPMENT_REPORTS VALUES (?,?,?)',[refId,order,"SHIPPED"])
-      if (shipment.pay_method != "topay"){
-        await connection.execute('UPDATE WALLET SET balance = balance - ? WHERE uid = ?', [price, id]);
-        await connection.execute('INSERT INTO EXPENSES (uid, expense_order, expense_cost) VALUES  (?,?,?)',[id, order, price])
-      }
-      await connection.commit();
+        if (shipRocketShipmentCreateData.api_error){
+          await connection.beginTransaction();
+          await connection.execute('UPDATE SHIPMENTS set serviceId = ?, categoryId = ?, awb = ? WHERE ord_id = ?', [serviceId, categoryId, "GENERATING..." ,order])
+          await connection.execute('INSERT INTO SHIPMENT_REPORTS VALUES (?,?,?)',[refId,order,"SHIPPED"])
+          if (shipment.pay_method != "topay"){
+            await connection.execute('UPDATE WALLET SET balance = balance - ? WHERE uid = ?', [price, id]);
+            await connection.execute('INSERT INTO EXPENSES (uid, expense_order, expense_cost) VALUES  (?,?,?)',[id, order, price])
+          }
+          await connection.commit();
+        } else {
+          await connection.beginTransaction();
+          await connection.execute('UPDATE SHIPMENTS set serviceId = ?, categoryId = ?, awb = ? WHERE ord_id = ?', [serviceId, categoryId, getShiprocketShipmentData.waybill_no ,order])
+          await connection.execute('INSERT INTO SHIPMENT_REPORTS VALUES (?,?,?)',[refId,order,"SHIPPED"])
+          if (shipment.pay_method != "topay"){
+            await connection.execute('UPDATE WALLET SET balance = balance - ? WHERE uid = ?', [price, id]);
+            await connection.execute('INSERT INTO EXPENSES (uid, expense_order, expense_cost) VALUES  (?,?,?)',[id, order, price])
+          }
+          await connection.commit();
+        }
+      
       return {
-        status:200, response : shipRocketShipmentCreateData, res2 : shipRocketCreateOrderData,success : true
+        status:200, response : shipRocketShipmentCreateData, res2 : shipRocketCreateOrderData, res3 : getShiprocketShipmentData,success : true
       }
     }
     return {
@@ -416,11 +427,11 @@ exports.handler = async (event) => {
     
   } 
   
-  catch (error) {
-    return {
-      status: 504, response : error, success : false
-    };
-  }
+  // catch (error) {
+  //   return {
+  //     status: 504, response : error, success : false
+  //   };
+  // }
   finally {
     connection.end()
   }

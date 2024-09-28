@@ -77,10 +77,10 @@ try {
         responses.push({ 
             "name" : service,
             "weight" : "20Kg",
-            "price" : Math.round(parseFloat(service.working.grand_total)*1.3),
+            "price" : Math.round(parseFloat(shiprocketPriceData[service].working.grand_total)*1.3),
             "serviceId" : "3",
             "categoryId" : "1",
-            "chargableWeight" : service.working.chargeable_weight 
+            "chargableWeight" : shiprocketPriceData[service].working.chargeable_weight 
           })
     }
   }
