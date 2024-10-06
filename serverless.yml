@@ -932,14 +932,14 @@ functions:
           method: post
           cors: true
           integration: lambda
-  getPickrrShipmentData:
-    handler: functions/getPickrrShipmentData.handler
+  updateProcessingShipments:
+    handler: functions/updateProcessingShipments.handler
     memorySize: 512
     timeout: 30
     events:
       - http:
-          path: getPickrrShipmentData
-          method: get
+          path: updateProcessingShipments
+          method: post
           cors: true
           integration: lambda
 plugins:

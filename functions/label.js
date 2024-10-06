@@ -11,7 +11,7 @@ const dbConfig = {
 };
 
 let transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST, 
+  host: process.env.EMAIL_HOST,
   port: process.env.EMAIL_PORT,
   secure: process.env.EMAIL_SECURE,
   auth: {
@@ -27,31 +27,31 @@ exports.handler = async (event) => {
     const token = event.headers.Authorization;
     const verified = jwt.verify(token, SECRET_KEY);
     const id = verified.id;
-    const {order} = event.body
+    const { order } = event.body
     const [users] = await connection.execute('SELECT * FROM USERS WHERE uid =?', [id]);
     const email = users[0].email;
     const [shipments] = await connection.execute('SELECT * FROM SHIPMENTS WHERE ord_id = ? ', [order]);
     const shipment = shipments[0];
-    const {serviceId, categoryId} = shipment;
+    const { serviceId, categoryId } = shipment;
     // const [orders] = await connection.execute('SELECT * FROM ORDERS WHERE ord_id = ? ', [order]);
     if (serviceId == 1) {
-      
-          const label = await fetch(`https://track.delhivery.com/api/p/packing_slip?wbns=${shipment.awb}&pdf=true`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'Authorization': `Token ${categoryId === 2?process.env.DELHIVERY_500GM_SURFACE_KEY:categoryId===1?process.env.DELHIVERY_10KG_SURFACE_KEY:categoryId===3?'':''}`
-            },
-          }).then((response) => response.json())
-          
-        
-   
-    return {
-      status: 200,
-      label : label.packages[0].pdf_download_link,
-      success : true,
-    };
+
+      const label = await fetch(`https://track.delhivery.com/api/p/packing_slip?wbns=${shipment.awb}&pdf=true`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Token ${categoryId === 2 ? process.env.DELHIVERY_500GM_SURFACE_KEY : categoryId === 1 ? process.env.DELHIVERY_10KG_SURFACE_KEY : categoryId === 3 ? '' : ''}`
+        },
+      }).then((response) => response.json())
+
+
+
+      return {
+        status: 200,
+        label: label.packages[0].pdf_download_link,
+        success: true,
+      };
     }
     else if (serviceId == 2) {
       const loginPayload = {
@@ -61,8 +61,8 @@ exports.handler = async (event) => {
         Scope: `${process.env.MOVIN_SERVER_ID}/.default`,
       };
       const formBody = Object.entries(loginPayload).map(
-	        ([key, value]) =>
-	        encodeURIComponent(key) + "=" + encodeURIComponent(value)
+        ([key, value]) =>
+          encodeURIComponent(key) + "=" + encodeURIComponent(value)
       ).join("&");
       const login = await fetch(`https://login.microsoftonline.com/${process.env.MOVIN_TENANT_ID}/oauth2/v2.0/token`, {
         method: 'POST',
@@ -70,7 +70,7 @@ exports.handler = async (event) => {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json',
         },
-        body : formBody
+        body: formBody
       })
       const loginRes = await login.json()
       const token = loginRes.access_token
@@ -79,33 +79,52 @@ exports.handler = async (event) => {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Ocp-Apim-Subscription-Key' : process.env.MOVIN_SUBSCRIPTION_KEY,
+          'Ocp-Apim-Subscription-Key': process.env.MOVIN_SUBSCRIPTION_KEY,
           'Authorization': `Bearer ${token}`
         },
-        body  : JSON.stringify({
-            "shipment_number": shipment.awb,
-            "account_number": process.env.MOVIN_ACCOUNT_NUMBER,
-            "scope": "all",
-            "label_type": "thermal"
+        body: JSON.stringify({
+          "shipment_number": shipment.awb,
+          "account_number": process.env.MOVIN_ACCOUNT_NUMBER,
+          "scope": "all",
+          "label_type": "thermal"
         })
       }).then((response) => response.json())
-      
-    
 
-return {
-  status: 200,
-  label : label.response, success : true,
-};
-} else if (serviceId == 3){
-  const [labels] = await connection.execute("SELECT * FROM SHIPMENT_LABELS WHERE ord_id = ?",[order])
-  const label = labels[0];
-  return {
-    status: 200,
-    label : label, success : true
-  };
-}
-    
-  }  finally {
+
+
+      return {
+        status: 200,
+        label: label.response, success: true,
+      };
+    } else if (serviceId == 3) {
+      const shipRocketLogin = await fetch('https://api-cargo.shiprocket.in/api/token/refresh/', {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refresh: process.env.SHIPROCKET_REFRESH_TOKEN }),
+      })
+      const shiprocketLoginData = await shipRocketLogin.json()
+      const shiprocketAccess = shiprocketLoginData.access
+      const vendorRefId = shipment.shipping_vendor_reference_id;
+      const getShipmentStatus = await fetch(`https://api-cargo.shiprocket.in/api/external/get_shipment/${vendorRefId}/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${shiprocketAccess}`,
+          'Content-Type': 'application/json'
+        },
+      });
+
+      const getShipmentStatusData = await getShipmentStatus.json();
+
+      const label = getShipmentStatusData.label_url
+      return {
+        status: 200,
+        label: label, success: true
+      };
+    }
+
+  } finally {
     connection.end()
   }
 };

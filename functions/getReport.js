@@ -5,7 +5,7 @@ require('dotenv').config();
 
 
 
-const SECRET_KEY = process.env.JWT_SECRET;
+const SECRET_KEY = process.env.ACCESS_TOKEN_SECRET;
 
 exports.handler = async (event, context) => {
   const token = event.headers.Authorization;
@@ -95,6 +95,34 @@ exports.handler = async (event, context) => {
              id : 3 ,
           };
         }
+      } else if (serviceId == 3){
+        const shipRocketLogin = await fetch('https://api-cargo.shiprocket.in/api/token/refresh/', {
+          method : 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ refresh: process.env.SHIPROCKET_REFRESH_TOKEN }),
+        })
+        const shiprocketLoginData = await shipRocketLogin.json()
+        const shiprocketAccess = shiprocketLoginData.access
+        const shipRocketTrack = await fetch(`https://api-cargo.shiprocket.in/api/shipment/track/${awb}/`, {
+          headers: {
+            'Authorization': `Bearer ${shiprocketAccess}`,
+            'Accept': 'application/json'
+          }
+        })
+        const shiprocketTrackData = await shipRocketTrack.json()
+        if (shiprocketTrackData.id){
+          return {
+            status: 200,
+            data: shiprocketTrackData.status_history, success: true, id : 4 ,
+          };
+        }
+      } else {
+        return {
+          status: 400,
+          message: 'Invalid Service ID',
+        };
       }
       
 

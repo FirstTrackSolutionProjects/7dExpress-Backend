@@ -1,6 +1,9 @@
 const mysql = require('mysql2/promise');
+const jwt = require("jsonwebtoken");
 
 require('dotenv').config();
+
+const SECRET_KEY = process.env.ACCESS_TOKEN_SECRET;
 
 const dbConfig = {
   host: process.env.DB_HOST,
@@ -45,7 +48,7 @@ exports.handler = async (event) => {
       const order = orders[0];
       const serviceId = order.serviceId;
       const categoryId = order.categoryId;
-      const vendorRefId = order.vendor_shipping_reference_id;
+      const vendorRefId = order.shipping_vendor_reference_id;
       if (serviceId == 3) {
 
         const shipRocketLogin = await fetch('https://api-cargo.shiprocket.in/api/token/refresh/', {
@@ -62,15 +65,14 @@ exports.handler = async (event) => {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${shiprocketAccess}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Content-Type': 'application/json'
           },
         });
 
         const getShipmentStatusData = await getShipmentStatus.json();
 
         if (getShipmentStatusData.waybill_no){
-          await connection.execute('UPDATE SHIPMENTS SET awb = ? WHERE ord_id = ?',[getShipmentStatusData.waybill_no, ord_id]);
+          await connection.execute('UPDATE SHIPMENTS SET awb = ?, in_process = ? WHERE ord_id = ?',[getShipmentStatusData.waybill_no, false ,ord_id]);
           return { status: 200, success : true,  message: 'Shipment processed successfully', awb : getShipmentStatusData.waybill_no };
         } else {
           return { status: 200, success : false, message: 'Shipment is still under process' };
