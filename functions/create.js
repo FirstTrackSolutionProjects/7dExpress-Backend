@@ -387,7 +387,7 @@ exports.handler = async (event) => {
         const shipRocketShipmentCreateData = await shipRocketShipmentCreate.json();
         if (shipRocketShipmentCreateData.id) {
           await connection.beginTransaction();
-          await connection.execute('UPDATE SHIPMENTS set serviceId = ?, categoryId = ?, is_processing = ? WHERE ord_id = ?', [serviceId, categoryId, true ,order])
+          await connection.execute('UPDATE SHIPMENTS set serviceId = ?, categoryId = ?, is_processing = ?, shipping_vendor_reference_id = ? WHERE ord_id = ?', [serviceId, categoryId, true , shipRocketShipmentCreateData.id ,order])
           await connection.execute('INSERT INTO SHIPMENT_REPORTS VALUES (?,?,?)', [refId, order, "MANIFESTED"])
           if (shipment.pay_method != "topay") {
             await connection.execute('UPDATE WALLET SET balance = balance - ? WHERE uid = ?', [price, id]);
